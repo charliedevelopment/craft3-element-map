@@ -1,0 +1,42 @@
+{
+	"name": "charliedev/element-map",
+	"description": "Simple visualization panel that lists related elements in their associated editors.",
+	"type": "craft-plugin",
+	"version": "0.0.1",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Charlie Development",
+			"email": "support@charliedev.com",
+			"homepage": "http://charliedev.com/"
+		}
+	],
+	"keywords": [
+		"craft",
+		"cms",
+		"craftcms",
+		"element",
+		"widget"
+	],
+	"support": {
+		"issues": "https://github.com/charliedevelopment/craft3-element-map/issues?state=open",
+		"source": "https://github.com/charliedevelopment/craft3-element-map",
+		"email": "support@charliedev.com"
+	},
+	"require": {
+		"craftcms/cms": "^3.0.0-RC1"
+	},
+	"autoload": {
+		"psr-4": {
+			"charliedev\\elementmap\\": "src/"
+		}
+	},
+	"extra": {
+		"name": "Element Map",
+		"handle": "element-map",
+		"schemaVersion": "0.0.1",
+		"hasCpSettings": false,
+		"hasCpSection": false,
+		"class": "charliedev\\elementmap\\ElementMap"
+	}
+}
