@@ -1,3 +1,46 @@
-<div class="meta">
-	<p>Map goes here</p>
+{%- import _self as macros -%}
+
+{#- Convert the simple element type name to the appropriate icon class. -#}
+{%- macro icon(name) -%}
+{%- if name == 'entry' -%}
+	section
+{%- elseif name == 'globalset' -%}
+	globe
+{%- else -%}
+	{{ name }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- do view.registerAssetBundle("charliedev\\elementmap\\resources\\ElementMapBundle") -%}
+
+<div class="meta element-map">
+	<h2>References to This Element</h2>
+	<p>
+		<ul>
+			{% for element in map.incoming %}
+				<li>
+					<span data-icon="{{ macros.icon(element.type) }}"></span>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable>{{ element.title }}</a>
+				</li>
+			{% endfor %}
+			{% if map.incoming | length == 0 %}
+				<li>None</li>
+			{% endif %}
+		</ul>
+	</p>
+	<hr>
+	<h2>References to Other Elements</h2>
+	<p>
+		<ul>
+			{% for element in map.outgoing %}
+				<li>
+					<span data-icon="{{ macros.icon(element.type) }}"></span>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable>{{ element.title }}</a>
+				</li>
+			{% endfor %}
+			{% if map.outgoing | length == 0 %}
+				<li>None</li>
+			{% endif %}
+		</ul>
+	</p>
 </div>

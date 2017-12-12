@@ -38,8 +38,7 @@ class ElementMap extends Plugin
 	 */
 	public function renderEntryElementMap(array &$context)
 	{
-		if ($context['entry']['id'] != null)
-		{
+		if ($context['entry']['id'] != null) {
 			return $this->renderer->render($context['entry']['id']);
 		}
 	}
@@ -50,8 +49,7 @@ class ElementMap extends Plugin
 	 */
 	public function renderCategoryElementMap(array &$context)
 	{
-		if ($context['category']['id'] != null)
-		{
+		if ($context['category']['id'] != null) {
 			return $this->renderer->render($context['category']['id']);
 		}
 	}
@@ -62,8 +60,7 @@ class ElementMap extends Plugin
 	 */
 	public function renderUserElementMap(array &$context)
 	{
-		if ($context['user']['id'] != null)
-		{
+		if ($context['user']['id'] != null) {
 			return $this->renderer->render($context['user']['id']);
 		}
 	}
