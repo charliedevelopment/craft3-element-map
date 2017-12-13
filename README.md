@@ -12,6 +12,8 @@ _TODO_
 
 ## Usage
 
+![Screenshot of the element map sidebar](./resources/element-map-sidebar.png)
+
 When editing an entry, category, or user in the full-page editor, you will be presented a panel in the sidebar with two lists.
 
 1. **References to This Element** lists the elements which contain the currently edited element somewhere in their fields. These elements could be entries, categories, tags, assets, users, or globals.
