@@ -8,7 +8,27 @@
 
 ## Installation
 
-_TODO_
+1. Open a terminal and navigate to your project folder:
+
+```bash
+cd /path/to/project
+```
+
+2. Require the package to download it via Composer:
+
+```bash
+composer require charliedev/element-map
+```
+
+3. Install the plugin on the `Settings -> Plugins` page in the Craft control panel.
+
+**--- or ---**
+
+3. Install the plugin via the command line:
+
+```bash
+./craft install/plugin element-map
+```
 
 ## Usage
 
