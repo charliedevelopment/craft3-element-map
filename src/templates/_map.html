@@ -13,34 +13,36 @@
 
 {%- do view.registerAssetBundle("charliedev\\elementmap\\resources\\ElementMapBundle") -%}
 
+<hr>
+
 <div class="meta element-map">
-	<h2>References to This Element</h2>
-	<p>
+
+	<div class="map">
+		<label>References to This Element</label>
 		<ul>
 			{% for element in map.incoming %}
 				<li>
-					<span data-icon="{{ macros.icon(element.type) }}"></span>
-					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable>{{ element.title }}</a>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span data-icon="{{ macros.icon(element.type) }}"></span>{{ element.title }}</a>
 				</li>
 			{% endfor %}
 			{% if map.incoming | length == 0 %}
 				<li>None</li>
 			{% endif %}
 		</ul>
-	</p>
-	<hr>
-	<h2>References to Other Elements</h2>
-	<p>
+	</div>
+
+	<div class="map">
+		<label>References to Other Elements</label>
 		<ul>
 			{% for element in map.outgoing %}
 				<li>
-					<span data-icon="{{ macros.icon(element.type) }}"></span>
-					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable>{{ element.title }}</a>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span data-icon="{{ macros.icon(element.type) }}"></span>{{ element.title }}</a>
 				</li>
 			{% endfor %}
 			{% if map.outgoing | length == 0 %}
 				<li>None</li>
 			{% endif %}
 		</ul>
-	</p>
+	</div>
+
 </div>
