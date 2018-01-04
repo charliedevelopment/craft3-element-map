@@ -98,7 +98,7 @@ class Renderer extends Component
 		$results = (new Query())
 			->select('r.' . $tocol . ' AS id, e.type AS type')
 			->from('{{%relations}} r')
-			->join('LEFT JOIN', '{{%elements}} e', 'r.' . $tocol . ' = e.id')
+			->leftJoin('{{%elements}} e', '[[r.' . $tocol . ']] = [[e.id]]')
 			->where($conditions, $params)
 			->all();
 		
@@ -161,7 +161,7 @@ class Renderer extends Component
 		return (new Query())
 			->select('e.id AS id, e.type AS type')
 			->from('{{%matrixblocks}} mb')
-			->join('LEFT JOIN', '{{%elements}} e', 'mb.ownerId = e.id')
+			->leftJoin('{{%elements}} e', '[[mb.ownerId]] = [[e.id]]')
 			->where($conditions)
 			->all();
 	}
