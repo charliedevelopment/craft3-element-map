@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.0.1] 2018-01-04
+
 ### Changed
 - Minor grammatical updates to README.md
 

@@ -1,4 +1,4 @@
-# Element Map
+# Element Map for Craft 3
 
 This plugin adds a widget to the sidebar of full-page element editors that allows content administrators to see, at a glance, the relationships between elements.
 
