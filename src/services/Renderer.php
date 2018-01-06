@@ -53,7 +53,7 @@ class Renderer extends Component
 		// check things like Entry -contains-> Matrix Block -contains-> Asset.
 		$toset_1 = [$elementid]; // Entry.
 		$toset_2 = $this->getMatrixBlocksByOwners($toset_1); // Entry -> matrix blocks.
-		$todata = $this->getRelationshipGroups(array_merge($toset_1, $toset_2), false);
+		$todata = $this->getRelationshipGroups(array_merge($toset_1, $toset_2), false); // Entry + matrix blocks -> content
 
 		// Convert the retrieved element ids into data we use to display the map.
 		$this->processRelationshipGroups($todata);
@@ -87,19 +87,16 @@ class Renderer extends Component
 			],
 			[
 				'or',
-				'sourceSiteId is null',
-				'sourceSiteId = :sourceSiteId',
+				['sourceSiteId' => null],
+				['sourceSiteId' => Craft::$app->getSites()->currentSite->id],
 			],
 		];
 
-		$params = [
-			':sourceSiteId' => Craft::$app->getSites()->currentSite->id,
-		];
 		$results = (new Query())
-			->select('r.' . $tocol . ' AS id, e.type AS type')
+			->select('[[r.' . $tocol . ']] AS id, [[e.type]] AS type')
 			->from('{{%relations}} r')
 			->leftJoin('{{%elements}} e', '[[r.' . $tocol . ']] = [[e.id]]')
-			->where($conditions, $params)
+			->where($conditions)
 			->all();
 		
 		// Create element type groups in order to further process the element list.
@@ -140,8 +137,13 @@ class Renderer extends Component
 	 */
 	private function getMatrixBlocksByOwners($owners) {
 		$conditions = [
-			'ownerId' => $owners,
-			'ownerSiteId' => Craft::$app->getSites()->currentSite->id,
+			'and',
+			['ownerId' => $owners],
+			[
+				'or',
+				['ownerSiteId' => null],
+				['ownerSiteId' => Craft::$app->getSites()->currentSite->id],
+			]
 		];
 		return (new Query())
 			->select('id')
@@ -159,7 +161,7 @@ class Renderer extends Component
 			'mb.id' => $group,
 		];
 		return (new Query())
-			->select('e.id AS id, e.type AS type')
+			->select('[[e.id]] AS id, [[e.type]] AS type')
 			->from('{{%matrixblocks}} mb')
 			->leftJoin('{{%elements}} e', '[[mb.ownerId]] = [[e.id]]')
 			->where($conditions)
