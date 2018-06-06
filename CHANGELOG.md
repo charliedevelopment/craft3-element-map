@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Changed
+- `resources` folder renamed to `assets` to follow Craft conventions.
+
 ## [1.0.2] 2018-01-06
 
 ### Fixed
