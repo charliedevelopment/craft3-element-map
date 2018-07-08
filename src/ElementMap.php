@@ -26,10 +26,11 @@ class ElementMap extends Plugin
 		$this->setComponents([
 			'renderer' => \charliedev\elementmap\services\Renderer::class,
 		]);
-		
+
 		Craft::$app->getView()->hook('cp.entries.edit.details', [$this, 'renderEntryElementMap']);
 		Craft::$app->getView()->hook('cp.categories.edit.details', [$this, 'renderCategoryElementMap']);
 		Craft::$app->getView()->hook('cp.users.edit.details', [$this, 'renderUserElementMap']);
+		Craft::$app->getView()->hook('cp.commerce.product.edit.details', [$this, 'renderProductElementMap']);
 	}
 
 	/**
@@ -44,7 +45,7 @@ class ElementMap extends Plugin
 	}
 
 	/**
-	 * Renders the element map for an category within the category editor, given the current Twig context.
+	 * Renders the element map for a category within the category editor, given the current Twig context.
 	 * @param array $context The incoming Twig context.
 	 */
 	public function renderCategoryElementMap(array &$context)
@@ -55,13 +56,24 @@ class ElementMap extends Plugin
 	}
 
 	/**
-	 * Renders the element map for an user within the user editor, given the current Twig context.
+	 * Renders the element map for a user within the user editor, given the current Twig context.
 	 * @param array $context The incoming Twig context.
 	 */
 	public function renderUserElementMap(array &$context)
 	{
 		if ($context['user']['id'] != null) {
 			return $this->renderer->render($context['user']['id']);
+		}
+	}
+
+	/**
+	 * Renders the element map for a product within the product editor, given the current Twig context.
+	 * @param array $context The incoming Twig context.
+	 */
+	public function renderProductElementMap(array &$context)
+	{
+		if ($context['product']['id'] != null) {
+			return $this->renderer->render($context['product']['id']);
 		}
 	}
 }
