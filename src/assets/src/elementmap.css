@@ -29,6 +29,12 @@
 	width: 20px;
 	height: 20px;
 	text-align: center;
+	vertical-align: middle;
+}
+
+.meta.element-map ul li span svg {
+	width: 100%;
+	height: 100%;
 }
 
 .meta.element-map ul li a {

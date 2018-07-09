@@ -1,16 +1,5 @@
 {%- import _self as macros -%}
 
-{#- Convert the simple element type name to the appropriate icon class. -#}
-{%- macro icon(name) -%}
-{%- if name == 'entry' -%}
-	section
-{%- elseif name == 'globalset' -%}
-	globe
-{%- else -%}
-	{{ name }}
-{%- endif -%}
-{%- endmacro -%}
-
 {%- do view.registerAssetBundle("charliedev\\elementmap\\assets\\ElementMapBundle") -%}
 
 <hr>
@@ -22,7 +11,7 @@
 		<ul>
 			{% for element in map.incoming %}
 				<li>
-					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span data-icon="{{ macros.icon(element.type) }}"></span>{{ element.title }}</a>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span class="icon icon-mask">{{ svg(element.icon) }}</span>{{ element.title }}</a>
 				</li>
 			{% endfor %}
 			{% if map.incoming | length == 0 %}
@@ -36,7 +25,7 @@
 		<ul>
 			{% for element in map.outgoing %}
 				<li>
-					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span data-icon="{{ macros.icon(element.type) }}"></span>{{ element.title }}</a>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span class="icon icon-mask">{{ svg(element.icon) }}</span>{{ element.title }}</a>
 				</li>
 			{% endfor %}
 			{% if map.outgoing | length == 0 %}

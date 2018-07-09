@@ -1,6 +1,14 @@
 ## [Unreleased]
 
+### Added
+- Element map display on Craft Commerce 2 products (thanks @nfourtythree).
+- Support for products/variants within Craft Commerce 2.
+
+### Fixed
+- Proper element multi-site element maps, originally could only show maps for the current site.
+
 ### Changed
+- Icons now pull directly from SVG files through craft's `svg()` twig function (necessary for non-standard craft icons).
 - `resources` folder renamed to `assets` to follow Craft conventions.
 
 ## [1.0.2] 2018-01-06

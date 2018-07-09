@@ -7,6 +7,8 @@
 namespace charliedev\elementmap\services;
 
 use Craft;
+use craft\commerce\elements\db\ProductQuery;
+use craft\commerce\elements\db\VariantQuery;
 use craft\db\Query;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
@@ -24,11 +26,12 @@ class Renderer extends Component
 	/**
 	 * Renders an element map relative to the given element.
 	 * @param int $elementid The ID of the element to render the map relative to.
+	 * @param int $siteid The ID of the site that relations should be determined from.
 	 */
-	public function render(int $elementid)
+	public function render(int $elementid, int $siteid)
 	{
 		// Gather up necessary structure data to render the element map with.
-		$results = $this->getElementMap($elementid);
+		$results = $this->getElementMap($elementid, $siteid);
 
 		// Render the actual element map.
 		return Craft::$app->view->renderTemplate('element-map/_map', ['map' => $results]);
@@ -39,11 +42,12 @@ class Renderer extends Component
 	 * element references.
 	 * @param int $elementid The ID of the element to generate a map for.
 	 */
-	private function getElementMap(int $elementid)
+	private function getElementMap(int $elementid, int $siteid)
 	{
 		// Find incoming relationships to this element. Check for references to it, then trace those elements'
-		// owners until we get to meaningful things, such as Category -in-> Matrix Block -in-> Entry.
-		$fromdata = $this->getRelationshipGroups([$elementid], true);
+		// owners until we get to meaningful things, such as Category -in-> Matrix Block -in-> Element.
+		$variants = $this->getVariantsByProduct($elementid); // Element -> variants.
+		$fromdata = $this->getRelationshipGroups(array_merge([$elementid], $variants), $siteid, true);
 
 		// Convert the retrieved element ids into data we use to display the map.
 		$this->processRelationshipGroups($fromdata);
@@ -51,9 +55,8 @@ class Renderer extends Component
 		// Find outgoing relationships from this element. This includes not only direct references, but any
 		// child elements like matrix blocks must have their own external references included, this means we can
 		// check things like Entry -contains-> Matrix Block -contains-> Asset.
-		$toset_1 = [$elementid]; // Entry.
-		$toset_2 = $this->getMatrixBlocksByOwners($toset_1); // Entry -> matrix blocks.
-		$todata = $this->getRelationshipGroups(array_merge($toset_1, $toset_2), false); // Entry + matrix blocks -> content
+		$blocks = $this->getMatrixBlocksByOwner($elementid); // Element -> matrix blocks.
+		$todata = $this->getRelationshipGroups(array_merge([$elementid], $blocks, $variants), $siteid, false); // Element + other nested content -> relationships
 
 		// Convert the retrieved element ids into data we use to display the map.
 		$this->processRelationshipGroups($todata);
@@ -61,12 +64,28 @@ class Renderer extends Component
 		return ['incoming' => $fromdata['results'], 'outgoing' => $todata['results']];
 	}
 
+	private function getVariantsByProduct($element) {
+		if (!class_exists(VariantQuery::class)) { // If commerce is not installed, don't worry about variants.
+			return [];
+		}
+		$conditions = [
+			'and',
+			['productId' => $element],
+		];
+		return (new Query())
+			->select('id')
+			->from('{{%commerce_variants}}')
+			->where($conditions)
+			->column();
+	}
+
 	/**
 	 * @param array $elementids The array of elements to get relationships for.
+	 * @param int $siteid The site ID that relationships should exist within.
 	 * @param bool $getsources Set to true when the elementids are for target elements, and the sources are being
 	 * searched for, or false when the elementids are for source elements, and the targets are being looked for.
 	 */
-	private function getRelationshipGroups(array $elementids, bool $getsources)
+	private function getRelationshipGroups(array $elementids, int $siteid, bool $getsources)
 	{
 		if ($getsources) {
 			$fromcol = 'targetId';
@@ -88,7 +107,7 @@ class Renderer extends Component
 			[
 				'or',
 				['sourceSiteId' => null],
-				['sourceSiteId' => Craft::$app->getSites()->currentSite->id],
+				['sourceSiteId' => $siteid],
 			],
 		];
 
@@ -98,7 +117,7 @@ class Renderer extends Component
 			->leftJoin('{{%elements}} e', '[[r.' . $tocol . ']] = [[e.id]]')
 			->where($conditions)
 			->all();
-		
+
 		// Create element type groups in order to further process the element list.
 		$elements = [
 			'craft\elements\MatrixBlock' => [],
@@ -108,6 +127,8 @@ class Renderer extends Component
 			'craft\elements\Tag' => [],
 			'craft\elements\Asset' => [],
 			'craft\elements\User' => [],
+			'craft\commerce\elements\Product' => [],
+			'craft\commerce\elements\Variant' => [],
 			'Other' => [],
 			'results' => [],
 		];
@@ -132,13 +153,13 @@ class Renderer extends Component
 	}
 
 	/**
-	 * Retrieves a list of matrix block IDs based on the given set of owner ids.
-	 * @param owners Retrieve all matrix blocks that are owned by any of the owners provided.
+	 * Retrieves a list of matrix block IDs based on the given owner ids.
+	 * @param owners The owner ID to retrieve matrix blocks for.
 	 */
-	private function getMatrixBlocksByOwners($owners) {
+	private function getMatrixBlocksByOwner($owner) {
 		$conditions = [
 			'and',
-			['ownerId' => $owners],
+			['ownerId' => $owner],
 			[
 				'or',
 				['ownerSiteId' => null],
@@ -181,7 +202,7 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'entry',
+				'icon' => '@vendor/craftcms/cms/src/icons/newspaper.svg',
 				'title' => $element->title,
 				'url' => $element->cpEditUrl,
 			];
@@ -202,7 +223,7 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'globalset',
+				'icon' => '@vendor/craftcms/cms/src/icons/globe.svg',
 				'title' => $element->name,
 				'url' => $element->cpEditUrl,
 			];
@@ -223,7 +244,7 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'category',
+				'icon' => '@vendor/craftcms/cms/src/icons/folder-open.svg',
 				'title' => $element->title,
 				'url' => $element->cpEditUrl,
 			];
@@ -244,7 +265,7 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'tag',
+				'icon' => '@vendor/craftcms/cms/src/icons/tags.svg',
 				'title' => $element->title,
 				'url' => '/' . Craft::$app->getConfig()->getGeneral()->cpTrigger . '/settings/tags/' . $element->groupId,
 			];
@@ -265,7 +286,7 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'asset',
+				'icon' => '@vendor/craftcms/cms/src/icons/photo.svg',
 				'title' => $element->title,
 				'url' => $element->volume->hasUrls ? $element->getUrl() : UrlHelper::cpUrl('settings/assets/volumes/' . $element->volume->id),
 			];
@@ -286,8 +307,50 @@ class Renderer extends Component
 		foreach ($elements as $element) {
 			$results[] = [
 				'id' => $element->id,
-				'type' => 'user',
+				'icon' => '@vendor/craftcms/cms/src/icons/user.svg',
 				'title' => $element->name,
+				'url' => $element->cpEditUrl,
+			];
+		}
+		return $results;
+	}
+
+	/**
+	 * Converts products into a list of standardized result items.
+	 * @param group The IDs of the products to convert.
+	 */
+	private function processProductGroup($group) {
+		$criteria = new ProductQuery('craft\commerce\elements\Product');
+		$criteria->id = $group;
+		$elements = $criteria->all();
+
+		$results = [];
+		foreach ($elements as $element) {
+			$results[] = [
+				'id' => $element->id,
+				'icon' => '@vendor/craftcms/commerce/src/icon-mask.svg',
+				'title' => $element->title,
+				'url' => $element->cpEditUrl,
+			];
+		}
+		return $results;
+	}
+
+	/**
+	 * Converts variants into a list of standardized result items.
+	 * @param group The IDs of the variants to convert.
+	 */
+	private function processVariantGroup($group) {
+		$criteria = new VariantQuery('craft\commerce\elements\Variant');
+		$criteria->id = $group;
+		$elements = $criteria->all();
+
+		$results = [];
+		foreach ($elements as $element) {
+			$results[] = [
+				'id' => $element->id,
+				'icon' => '@vendor/craftcms/commerce/src/icon-mask.svg',
+				'title' => $element->product->title . ': ' . $element->title,
 				'url' => $element->cpEditUrl,
 			];
 		}
@@ -303,6 +366,16 @@ class Renderer extends Component
 			$data = $this->processMatrixGroup($groups['craft\elements\MatrixBlock']); // Process the data for this group.
 			$groups['craft\elements\MatrixBlock'] = []; // Clear the data for this group.
 			$this->integrateGroupData($groups, $data); // Re-integrate new data into the group container.
+			$this->processRelationshipGroups($groups); // Process more groups.
+		} else if (count($groups['craft\commerce\elements\Product'])) {
+			$data = $this->processProductGroup($groups['craft\commerce\elements\Product']); // Process the data for this group.
+			$groups['craft\commerce\elements\Product'] = []; // Clear the data for this group.
+			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
+			$this->processRelationshipGroups($groups); // Process more groups.
+		} else if (count($groups['craft\commerce\elements\Variant'])) {
+			$data = $this->processVariantGroup($groups['craft\commerce\elements\Variant']); // Process the data for this group.
+			$groups['craft\commerce\elements\Variant'] = []; // Clear the data for this group.
+			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
 			$this->processRelationshipGroups($groups); // Process more groups.
 		} else if (count($groups['craft\elements\Entry'])) {
 			$data = $this->processEntryGroup($groups['craft\elements\Entry']); // Process the data for this group.
