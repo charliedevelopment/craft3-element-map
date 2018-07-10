@@ -320,6 +320,9 @@ class Renderer extends Component
 	 * @param group The IDs of the products to convert.
 	 */
 	private function processProductGroup($group) {
+		if (!class_exists(ProductQuery::class)) { // Commerce not installed.
+			return [];
+		}
 		$criteria = new ProductQuery('craft\commerce\elements\Product');
 		$criteria->id = $group;
 		$elements = $criteria->all();
@@ -341,6 +344,9 @@ class Renderer extends Component
 	 * @param group The IDs of the variants to convert.
 	 */
 	private function processVariantGroup($group) {
+		if (!class_exists(VariantQuery::class)) { // Commerce not installed.
+			return [];
+		}
 		$criteria = new VariantQuery('craft\commerce\elements\Variant');
 		$criteria->id = $group;
 		$elements = $criteria->all();
