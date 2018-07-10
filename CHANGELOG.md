@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.1.0] 2018-07-10
+
 ### Added
 - Element map display on Craft Commerce 2 products (thanks @nfourtythree).
 - Support for products/variants within Craft Commerce 2.
