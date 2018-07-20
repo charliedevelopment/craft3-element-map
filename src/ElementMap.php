@@ -62,7 +62,7 @@ class ElementMap extends Plugin
 	public function renderUserElementMap(array &$context)
 	{
 		if ($context['user']['id'] != null) {
-			return $this->renderer->render($context['user']['id'], $context['site']['id']);
+			return $this->renderer->render($context['user']['id']);
 		}
 	}
 

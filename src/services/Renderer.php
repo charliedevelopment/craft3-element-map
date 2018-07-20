@@ -28,7 +28,7 @@ class Renderer extends Component
 	 * @param int $elementid The ID of the element to render the map relative to.
 	 * @param int $siteid The ID of the site that relations should be determined from.
 	 */
-	public function render(int $elementid, int $siteid)
+	public function render(int $elementid, ?int $siteid = null)
 	{
 		// Gather up necessary structure data to render the element map with.
 		$results = $this->getElementMap($elementid, $siteid);
@@ -42,7 +42,7 @@ class Renderer extends Component
 	 * element references.
 	 * @param int $elementid The ID of the element to generate a map for.
 	 */
-	private function getElementMap(int $elementid, int $siteid)
+	private function getElementMap(int $elementid, ?int $siteid)
 	{
 		// Find incoming relationships to this element. Check for references to it, then trace those elements'
 		// owners until we get to meaningful things, such as Category -in-> Matrix Block -in-> Element.
@@ -85,7 +85,7 @@ class Renderer extends Component
 	 * @param bool $getsources Set to true when the elementids are for target elements, and the sources are being
 	 * searched for, or false when the elementids are for source elements, and the targets are being looked for.
 	 */
-	private function getRelationshipGroups(array $elementids, int $siteid, bool $getsources)
+	private function getRelationshipGroups(array $elementids, ?int $siteid, bool $getsources)
 	{
 		if ($getsources) {
 			$fromcol = 'targetId';
