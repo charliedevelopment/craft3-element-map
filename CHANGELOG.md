@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [1.1.1] 2018-07-20
+
+### Fixed
+- Issue with users on multi-site element maps.
+
 ## [1.1.0] 2018-07-10
 
 ### Added
