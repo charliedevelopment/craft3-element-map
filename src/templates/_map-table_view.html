@@ -1,0 +1,20 @@
+{%- import _self as macros -%}
+
+{%- do view.registerAssetBundle("charliedev\\elementmap\\assets\\ElementMapBundle") -%}
+
+<div class="meta element-map">
+
+	<div class="map">
+		<ul>
+			{% for element in map.incoming %}
+				<li>
+          {# NOTE: Link should also link to users' current site #}
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span class="icon icon-mask">{{ svg(element.icon) }}</span>{{ element.title }}</a>
+				</li>
+			{% endfor %}
+			{% if map.incoming | length == 0 %}
+			{% endif %}
+		</ul>
+	</div>
+
+</div>

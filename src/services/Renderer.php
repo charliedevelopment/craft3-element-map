@@ -28,13 +28,18 @@ class Renderer extends Component
 	 * @param int $elementid The ID of the element to render the map relative to.
 	 * @param int $siteid The ID of the site that relations should be determined from.
 	 */
-	public function render(int $elementid, int $siteid)
+  // NOTE: Added $tableview argument to render alternate template in entries view
+	public function render(int $elementid, int $siteid, $tableview = false)
 	{
 		// Gather up necessary structure data to render the element map with.
 		$results = $this->getElementMap($elementid, $siteid);
 
 		// Render the actual element map.
-		return Craft::$app->view->renderTemplate('element-map/_map', ['map' => $results]);
+    if ($tableview) {
+      return Craft::$app->view->renderTemplate('element-map/_map-table_view', ['map' => $results]);
+    } else {
+      return Craft::$app->view->renderTemplate('element-map/_map', ['map' => $results]);
+    }
 	}
 
 	/**
