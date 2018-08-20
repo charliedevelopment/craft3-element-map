@@ -7,14 +7,22 @@
 namespace charliedev\elementmap;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Plugin;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
+use craft\elements\User;
+use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\SetElementTableAttributeHtmlEvent;
+
+use yii\base\Event;
 
 /**
  * The main Craft plugin class.
  */
 class ElementMap extends Plugin
 {
-
 	/**
 	 * @inheritdoc
 	 * @see craft\base\Plugin
@@ -27,10 +35,58 @@ class ElementMap extends Plugin
 			'renderer' => \charliedev\elementmap\services\Renderer::class,
 		]);
 
+		// Render element maps within the appropriate template hooks.
 		Craft::$app->getView()->hook('cp.entries.edit.details', [$this, 'renderEntryElementMap']);
 		Craft::$app->getView()->hook('cp.categories.edit.details', [$this, 'renderCategoryElementMap']);
 		Craft::$app->getView()->hook('cp.users.edit.details', [$this, 'renderUserElementMap']);
 		Craft::$app->getView()->hook('cp.commerce.product.edit.details', [$this, 'renderProductElementMap']);
+
+		// Allow some elements to have map data shown in their overview tables.
+		Event::on(Asset::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
+		Event::on(Asset::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
+		Event::on(Category::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
+		Event::on(Category::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
+		Event::on(Entry::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
+		Event::on(Entry::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
+		Event::on(User::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
+		Event::on(User::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
+	}
+
+	/**
+	 * Handler for the Element::EVENT_REGISTER_TABLE_ATTRIBUTES event.
+	 */
+	public function registerTableAttributes(RegisterElementTableAttributesEvent $event) {
+		$event->tableAttributes['elementMap_incomingReferenceCount'] = ['label' => Craft::t('element-map', 'References From (Count)')];
+		$event->tableAttributes['elementMap_outgoingReferenceCount'] = ['label' => Craft::t('element-map', 'References To (Count)')];
+		$event->tableAttributes['elementMap_incomingReferences'] = ['label' => Craft::t('element-map', 'References From')];
+		$event->tableAttributes['elementMap_outgoingReferences'] = ['label' => Craft::t('element-map', 'References To')];
+	}
+
+	/**
+	 * Handler for the Element::EVENT_SET_TABLE_ATTRIBUTE_HTML event.
+	 */
+	public function getTableAttributeHtml(SetElementTableAttributeHtmlEvent $event) {
+		if ($event->attribute == 'elementMap_incomingReferenceCount') {
+			$event->handled = true;
+			$entry = $event->sender;
+			$elements = $this->renderer->getIncomingElements($entry->id, $entry->site->id);
+			$event->html = Craft::$app->view->renderTemplate('element-map/_table', ['elements' => count($elements)]);
+		} else if ($event->attribute == 'elementMap_outgoingReferenceCount') {
+			$event->handled = true;
+			$entry = $event->sender;
+			$elements = $this->renderer->getOutgoingElements($entry->id, $entry->site->id);
+			$event->html = Craft::$app->view->renderTemplate('element-map/_table', ['elements' => count($elements)]);
+		} else if ($event->attribute == 'elementMap_incomingReferences') {
+			$event->handled = true;
+			$entry = $event->sender;
+			$elements = $this->renderer->getIncomingElements($entry->id, $entry->site->id);
+			$event->html = Craft::$app->view->renderTemplate('element-map/_table', ['elements' => $elements]);
+		} else if ($event->attribute == 'elementMap_outgoingReferences') {
+			$event->handled = true;
+			$entry = $event->sender;
+			$elements = $this->renderer->getOutgoingElements($entry->id, $entry->site->id);
+			$event->html = Craft::$app->view->renderTemplate('element-map/_table', ['elements' => $elements]);
+		}
 	}
 
 	/**
@@ -39,9 +95,8 @@ class ElementMap extends Plugin
 	 */
 	public function renderEntryElementMap(array &$context)
 	{
-		if ($context['entry']['id'] != null) {
-			return $this->renderer->render($context['entry']['id'], $context['site']['id']);
-		}
+		$map = $this->renderer->getElementMap($context['entry']['id'], $context['site']['id']);
+		return $this->renderMap($map);
 	}
 
 	/**
@@ -50,9 +105,8 @@ class ElementMap extends Plugin
 	 */
 	public function renderCategoryElementMap(array &$context)
 	{
-		if ($context['category']['id'] != null) {
-			return $this->renderer->render($context['category']['id'], $context['site']['id']);
-		}
+		$map = $this->renderer->getElementMap($context['category']['id'], $context['site']['id']);
+		return $this->renderMap($map);
 	}
 
 	/**
@@ -61,9 +115,8 @@ class ElementMap extends Plugin
 	 */
 	public function renderUserElementMap(array &$context)
 	{
-		if ($context['user']['id'] != null) {
-			return $this->renderer->render($context['user']['id'], Craft::$app->getSites()->getPrimarySite()->id);
-		}
+		$map = $this->renderer->getElementMap($context['user']['id'], Craft::$app->getSites()->getPrimarySite()->id);
+		return $this->renderMap($map);
 	}
 
 	/**
@@ -72,8 +125,18 @@ class ElementMap extends Plugin
 	 */
 	public function renderProductElementMap(array &$context)
 	{
-		if ($context['product']['id'] != null) {
-			return $this->renderer->render($context['product']['id'], $context['site']['id']);
+		$map = $this->renderer->getElementMap($context['product']['id'], $context['site']['id']);
+		return $this->renderMap($map);
+	}
+
+	/**
+	 * Renders an underlying incoming/outgoing element map.
+	 * @param array $map The map data to render.
+	 */
+	private function renderMap($map)
+	{
+		if ($map) {
+			return Craft::$app->view->renderTemplate('element-map/_map', ['map' => $map]);
 		}
 	}
 }

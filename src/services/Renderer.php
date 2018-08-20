@@ -22,14 +22,13 @@ use yii\base\Component;
 
 class Renderer extends Component
 {
-
 	/**
-	 * Renders an element map relative to the given element.
-	 * @param int $elementid The ID of the element to render the map relative to.
-	 * @param int $siteid The ID of the site that relations should be determined from.
+	 * @deprecated
 	 */
 	public function render(int $elementid, int $siteid)
 	{
+		Craft::$app->getDeprecator()->log('charliedev\elementmap\services\Renderer::render()', 'charliedev\elementmap\services\Renderer::render() is deprecated. Map results may be gathered individually with other functions such as getElementMap, getIncomingElements, and getOutgoingElements.');
+
 		// Gather up necessary structure data to render the element map with.
 		$results = $this->getElementMap($elementid, $siteid);
 
@@ -38,30 +37,73 @@ class Renderer extends Component
 	}
 
 	/**
-	 * Generates a map structure indicating elements that reference the given element, and elements that the given
-	 * element references.
-	 * @param int $elementid The ID of the element to generate a map for.
+	 * Generates a data structure containing elements that reference the given
+	 * element and those that the given element references.
+	 * @param int $elementid The ID of the element to retrieve map
+	 * information about.
+	 * @param int $siteId The ID of the site context that information should
+	 * be gathered within.
 	 */
-	private function getElementMap(int $elementid, int $siteid)
+	public function getElementMap($elementId, int $siteId)
 	{
+		if (!$elementId) {
+			return null;
+		}
+
+		return [
+			'incoming' => $this->getIncomingElements($elementId, $siteId),
+			'outgoing' => $this->getOutgoingElements($elementId, $siteId),
+		];
+	}
+
+	/**
+	 * Retrieves a list of elements referencing the given element.
+	 * @param int $elementid The ID of the element to retrieve map
+	 * information about.
+	 * @param int $siteId The ID of the site context that information should
+	 * be gathered within.
+	 */
+	public function getIncomingElements($elementId, int $siteId)
+	{
+		if (!$elementId) {
+			return null;
+		}
+
 		// Find incoming relationships to this element. Check for references to it, then trace those elements'
 		// owners until we get to meaningful things, such as Category -in-> Matrix Block -in-> Element.
-		$variants = $this->getVariantsByProduct($elementid); // Element -> variants.
-		$fromdata = $this->getRelationshipGroups(array_merge([$elementid], $variants), $siteid, true);
+		$variants = $this->getVariantsByProduct($elementId); // Element -> variants.
+		$fromdata = $this->getRelationshipGroups(array_merge([$elementId], $variants), $siteId, true);
 
 		// Convert the retrieved element ids into data we use to display the map.
 		$this->processRelationshipGroups($fromdata);
 
+		return $fromdata['results'];
+	}
+
+	/**
+	 * Retrieves a list of elements that the given element references.
+	 * @param int $elementid The ID of the element to retrieve map
+	 * information about.
+	 * @param int $siteId The ID of the site context that information should
+	 * be gathered within.
+	 */
+	public function getOutgoingElements($elementId, int $siteId)
+	{
+		if (!$elementId) {
+			return null;
+		}
+
 		// Find outgoing relationships from this element. This includes not only direct references, but any
 		// child elements like matrix blocks must have their own external references included, this means we can
 		// check things like Entry -contains-> Matrix Block -contains-> Asset.
-		$blocks = $this->getMatrixBlocksByOwner($elementid); // Element -> matrix blocks.
-		$todata = $this->getRelationshipGroups(array_merge([$elementid], $blocks, $variants), $siteid, false); // Element + other nested content -> relationships
+		$variants = $this->getVariantsByProduct($elementId); // Element -> variants.
+		$blocks = $this->getMatrixBlocksByOwner($elementId); // Element -> matrix blocks.
+		$todata = $this->getRelationshipGroups(array_merge([$elementId], $blocks, $variants), $siteId, false); // Element + other nested content -> relationships
 
 		// Convert the retrieved element ids into data we use to display the map.
 		$this->processRelationshipGroups($todata);
 
-		return ['incoming' => $fromdata['results'], 'outgoing' => $todata['results']];
+		return $todata['results'];
 	}
 
 	private function getVariantsByProduct($element) {

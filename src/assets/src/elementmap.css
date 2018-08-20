@@ -1,3 +1,4 @@
+/* Extra padding, spacing, and text styles for sidebar element map. */
 .meta.element-map .map {
 	padding: 8px 0;
 	margin-bottom: 8px;
@@ -18,26 +19,35 @@
 	margin-left: 24px;
 }
 
-.meta.element-map ul li:not(:last-child) {
-	margin-bottom: 4px;
+.meta.element-map ul li a {
+	color: #52606f;
+	text-decoration: underline;
 }
 
 .meta.element-map ul li span {
-	display: inline-block;
 	margin-left: -24px;
-	margin-right: 4px;
+}
+
+/* All element maps (table/sidebar). */
+.element-map ul li:not(:last-child) {
+	margin-bottom: 4px;
+}
+
+.element-map ul li span {
+	display: inline-block;
 	width: 20px;
 	height: 20px;
+	margin-right: 4px;
 	text-align: center;
 	vertical-align: middle;
 }
 
-.meta.element-map ul li span svg {
+.element-map ul li span svg {
 	width: 100%;
 	height: 100%;
 }
 
-.meta.element-map ul li a {
-	color: #52606f;
-	text-decoration: underline;
+/* Empty table element maps. */
+.element-map > span {
+	color: #b9bfc6;
 }

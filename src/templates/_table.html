@@ -1,0 +1,18 @@
+{%- do view.registerAssetBundle("charliedev\\elementmap\\assets\\ElementMapBundle") -%}
+
+<div class="element-map">
+	{% if elements is iterable %}
+		<ul>
+			{% for element in elements %}
+				<li>
+					<a target="_blank" href="{{ element.url }}" data-id="{{ element.id }}" data-editable><span class="icon icon-mask">{{ svg(element.icon) }}</span>{{ element.title }}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% elseif elements %}
+		{{ elements }}
+	{% else %}
+		<span>--</span>
+	{% endif %}
+
+</div>
