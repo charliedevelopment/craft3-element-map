@@ -75,7 +75,7 @@ class Renderer extends Component
 		$fromdata = $this->getRelationshipGroups(array_merge([$elementId], $variants), $siteId, true);
 
 		// Convert the retrieved element ids into data we use to display the map.
-		$this->processRelationshipGroups($fromdata);
+		$this->processRelationshipGroups($fromdata, $siteId);
 
 		return $fromdata['results'];
 	}
@@ -101,7 +101,7 @@ class Renderer extends Component
 		$todata = $this->getRelationshipGroups(array_merge([$elementId], $blocks, $variants), $siteId, false); // Element + other nested content -> relationships
 
 		// Convert the retrieved element ids into data we use to display the map.
-		$this->processRelationshipGroups($todata);
+		$this->processRelationshipGroups($todata, $siteId);
 
 		return $todata['results'];
 	}
@@ -235,9 +235,10 @@ class Renderer extends Component
 	 * Converts entries into a list of standardized result items.
 	 * @param group The IDs of the entries to convert.
 	 */
-	private function processEntryGroup($group) {
+	private function processEntryGroup($group, $siteId) {
 		$criteria = new EntryQuery('craft\elements\Entry');
 		$criteria->id = $group;
+		$criteria->siteId = $siteId;
 		$elements = $criteria->all();
 
 		$results = [];
@@ -277,9 +278,10 @@ class Renderer extends Component
 	 * Converts categories into a list of standardized result items.
 	 * @param group The IDs of the categories to convert.
 	 */
-	private function processCategoryGroup($group) {
+	private function processCategoryGroup($group, $siteId) {
 		$criteria = new CategoryQuery('craft\elements\Category');
 		$criteria->id = $group;
+		$criteria->siteId = $siteId;
 		$elements = $criteria->all();
 
 		$results = [];
@@ -361,12 +363,13 @@ class Renderer extends Component
 	 * Converts products into a list of standardized result items.
 	 * @param group The IDs of the products to convert.
 	 */
-	private function processProductGroup($group) {
+	private function processProductGroup($group, $siteId) {
 		if (!class_exists(ProductQuery::class)) { // Commerce not installed.
 			return [];
 		}
 		$criteria = new ProductQuery('craft\commerce\elements\Product');
 		$criteria->id = $group;
+		$criteria->siteId = $siteId;
 		$elements = $criteria->all();
 
 		$results = [];
@@ -385,12 +388,13 @@ class Renderer extends Component
 	 * Converts variants into a list of standardized result items.
 	 * @param group The IDs of the variants to convert.
 	 */
-	private function processVariantGroup($group) {
+	private function processVariantGroup($group, $siteId) {
 		if (!class_exists(VariantQuery::class)) { // Commerce not installed.
 			return [];
 		}
 		$criteria = new VariantQuery('craft\commerce\elements\Variant');
 		$criteria->id = $group;
+		$criteria->siteId = $siteId;
 		$elements = $criteria->all();
 
 		$results = [];
@@ -408,53 +412,54 @@ class Renderer extends Component
 	/**
 	 * Iterates over elements within each group, converting what it can find into result sets.
 	 * @param groups A reference to the groups container that contains the processed and unprocessed elements.
+	 * @param siteId The ID of the site to retrieve elements within.
 	 */
-	private function processRelationshipGroups(&$groups) {
+	private function processRelationshipGroups(&$groups, $siteId) {
 		if (count($groups['craft\elements\MatrixBlock'])) {
 			$data = $this->processMatrixGroup($groups['craft\elements\MatrixBlock']); // Process the data for this group.
 			$groups['craft\elements\MatrixBlock'] = []; // Clear the data for this group.
 			$this->integrateGroupData($groups, $data); // Re-integrate new data into the group container.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\commerce\elements\Product'])) {
-			$data = $this->processProductGroup($groups['craft\commerce\elements\Product']); // Process the data for this group.
+			$data = $this->processProductGroup($groups['craft\commerce\elements\Product'], $siteId); // Process the data for this group.
 			$groups['craft\commerce\elements\Product'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\commerce\elements\Variant'])) {
-			$data = $this->processVariantGroup($groups['craft\commerce\elements\Variant']); // Process the data for this group.
+			$data = $this->processVariantGroup($groups['craft\commerce\elements\Variant'], $siteId); // Process the data for this group.
 			$groups['craft\commerce\elements\Variant'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\Entry'])) {
-			$data = $this->processEntryGroup($groups['craft\elements\Entry']); // Process the data for this group.
+			$data = $this->processEntryGroup($groups['craft\elements\Entry'], $siteId); // Process the data for this group.
 			$groups['craft\elements\Entry'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\GlobalSet'])) {
 			$data = $this->processGlobalSetGroup($groups['craft\elements\GlobalSet']); // Process the data for this group.
 			$groups['craft\elements\GlobalSet'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\Category'])) {
-			$data = $this->processCategoryGroup($groups['craft\elements\Category']); // Process the data for this group.
+			$data = $this->processCategoryGroup($groups['craft\elements\Category'], $siteId); // Process the data for this group.
 			$groups['craft\elements\Category'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\Tag'])) {
 			$data = $this->processTagGroup($groups['craft\elements\Tag']); // Process the data for this group.
 			$groups['craft\elements\Tag'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\Asset'])) {
 			$data = $this->processAssetGroup($groups['craft\elements\Asset']); // Process the data for this group.
 			$groups['craft\elements\Asset'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		} else if (count($groups['craft\elements\User'])) {
 			$data = $this->processUserGroup($groups['craft\elements\User']); // Process the data for this group.
 			$groups['craft\elements\User'] = []; // Clear the data for this group.
 			$groups['results'] = array_merge($groups['results'], $data); // Add the results to the set.
-			$this->processRelationshipGroups($groups); // Process more groups.
+			$this->processRelationshipGroups($groups, $siteId); // Process more groups.
 		}
 	}
 }
