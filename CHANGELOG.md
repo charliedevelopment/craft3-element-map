@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+### Added
+- Quick table views for element maps so element counts and references can be viewed on the element overview pages.
+- Super Table support.
+
+### Fixed
+- Elements displayed within the map will attempt to link to the element within the current site context.
+
 ## [1.1.1] 2018-07-20
 
 ### Fixed

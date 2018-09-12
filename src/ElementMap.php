@@ -9,6 +9,7 @@ namespace charliedev\elementmap;
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin;
+use craft\commerce\elements\Product;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -50,12 +51,15 @@ class ElementMap extends Plugin
 		Event::on(Entry::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
 		Event::on(User::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
 		Event::on(User::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
+		Event::on(Product::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, [$this, 'registerTableAttributes']);
+		Event::on(Product::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, [$this, 'getTableAttributeHtml']);
 	}
 
 	/**
 	 * Handler for the Element::EVENT_REGISTER_TABLE_ATTRIBUTES event.
 	 */
-	public function registerTableAttributes(RegisterElementTableAttributesEvent $event) {
+	public function registerTableAttributes(RegisterElementTableAttributesEvent $event)
+	{
 		$event->tableAttributes['elementMap_incomingReferenceCount'] = ['label' => Craft::t('element-map', 'References From (Count)')];
 		$event->tableAttributes['elementMap_outgoingReferenceCount'] = ['label' => Craft::t('element-map', 'References To (Count)')];
 		$event->tableAttributes['elementMap_incomingReferences'] = ['label' => Craft::t('element-map', 'References From')];
@@ -65,7 +69,8 @@ class ElementMap extends Plugin
 	/**
 	 * Handler for the Element::EVENT_SET_TABLE_ATTRIBUTE_HTML event.
 	 */
-	public function getTableAttributeHtml(SetElementTableAttributeHtmlEvent $event) {
+	public function getTableAttributeHtml(SetElementTableAttributeHtmlEvent $event)
+	{
 		if ($event->attribute == 'elementMap_incomingReferenceCount') {
 			$event->handled = true;
 			$entry = $event->sender;
