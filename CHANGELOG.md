@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.2.0] 2018-09-12
+
 ### Added
 - Quick table views for element maps so element counts and references can be viewed on the element overview pages.
 - Super Table support.
