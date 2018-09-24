@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Added
+- Elements displayed by the map are now sorted in alphabetical order.
+
 ## [1.2.0] 2018-09-12
 
 ### Added

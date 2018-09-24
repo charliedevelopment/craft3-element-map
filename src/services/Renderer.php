@@ -642,6 +642,11 @@ class Renderer extends Component
 
 			unset($elements[$type]);
 		}
+
+		usort($results, function($a, $b) {
+			return strcmp($a['title'], $b['title']);
+		});
+
 		return $results;
 	}
 }
