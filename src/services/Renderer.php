@@ -441,6 +441,7 @@ class Renderer extends Component
 		$criteria = new EntryQuery('craft\elements\Entry');
 		$criteria->id = $elementIds;
 		$criteria->siteId = $siteId;
+		$criteria->status = null;
 		$elements = $criteria->all();
 
 		$results = [];
@@ -488,6 +489,7 @@ class Renderer extends Component
 		$criteria = new CategoryQuery('craft\elements\Category');
 		$criteria->id = $elementIds;
 		$criteria->siteId = $siteId;
+		$criteria->status = null;
 		$elements = $criteria->all();
 
 		$results = [];
