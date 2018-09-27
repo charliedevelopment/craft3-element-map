@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.2.1] 2018-09-27
+
 ### Added
 - Elements displayed by the map are now sorted in alphabetical order.
 - Element map displays disabled elements.

@@ -2,7 +2,7 @@
 	"name": "charliedev/element-map",
 	"description": "Simple visualization panel that lists related elements in their associated editors.",
 	"type": "craft-plugin",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"license": "MIT",
 	"authors": [
 		{
