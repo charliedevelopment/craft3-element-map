@@ -37,6 +37,7 @@ class ElementMap extends Plugin
 		]);
 
 		// Render element maps within the appropriate template hooks.
+		Craft::$app->getView()->hook('cp.assets.edit.details', [$this, 'renderAssetElementMap']);
 		Craft::$app->getView()->hook('cp.entries.edit.details', [$this, 'renderEntryElementMap']);
 		Craft::$app->getView()->hook('cp.categories.edit.details', [$this, 'renderCategoryElementMap']);
 		Craft::$app->getView()->hook('cp.users.edit.details', [$this, 'renderUserElementMap']);
@@ -92,6 +93,16 @@ class ElementMap extends Plugin
 			$elements = $this->renderer->getOutgoingElements($entry->id, $entry->site->id);
 			$event->html = Craft::$app->view->renderTemplate('element-map/_table', ['elements' => $elements]);
 		}
+	}
+	
+	/**
+	 * Renders the element map for an asset within the asset editor, given the current Twig context.
+	 * @param array $context The incoming Twig context.
+	 */
+	public function renderAssetElementMap(array &$context)
+	{
+		$map = $this->renderer->getElementMap($context['element']['id'], Craft::$app->getSites()->getPrimarySite()->id);
+		return $this->renderMap($map);
 	}
 
 	/**
